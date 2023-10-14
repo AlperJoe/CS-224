@@ -1,0 +1,172 @@
+﻿numberHex: .asciiz "This is the hexadecimal form of the number 1: "
+numberHex2: .asciiz "This is the hexadecimal form of the number 2: "
+space: .asciiz "         "
+newLine: .asciiz "\n"
+
+
+.text
+main:
+
+       	la $a0, enterNumber #"Please enter decimal number: "
+       	li $v0, 4 #print string
+       	syscall
+       	
+       	li $v0, 5 #read integer
+        syscall
+       	move $t0, $v0 #$t0 hold value1
+   
+       	la $a0, enterNumber2 #"Please enter decimal number: "
+       	li $v0, 4 #print string
+       	syscall
+       	
+       	li $v0, 5 #read integer
+        syscall
+       	move $t1, $v0 #memory write 
+       	
+    
+       	la $a0, numberHex	
+       	li $v0, 4	# syscall 4 prints the string
+       	syscall
+       	
+       	move $a0, $t0	
+       	li $v0, 34	# syscall 4 prints the string
+       	syscall
+       	
+       	la $a0, newLine 
+       	li $v0, 4  #print string
+       	syscall
+       	
+       	la $a0, numberHex2	
+       	li $v0, 4	# syscall 4 prints the string
+       	syscall
+       	
+       	move $a0, $t1	#$t1 hold value2
+       	li $v0, 34	# syscall 4 prints the string
+       	syscall
+       	
+       	la $a0, newLine 
+       	li $v0, 4  #print string
+       	syscall
+       	
+       	addi $t2, $zero, 0 #sum holder
+       	addi $t6, $zero, 0 #index increment
+       	
+       	loop: beq $t6, 31, displaySum
+       	 	
+       	and $t4, $t0, 1 
+       	and $t5, $t1, 1
+        xor $t3, $t4, $t5   #$t1 holds value xor
+       	beq $t3, 1, incrementSum
+       	incrementReturn:
+        srl $t0, $t0, 1
+       	srl $t1, $t1, 1
+       	addi $t6, $t6, 1 #index increment
+       	
+       	j loop
+       	
+       	displaySum: 
+       		li $v0, 1	
+       		move $a0,$t2
+      		syscall 
+       		
+       		li $v0, 10 #exit trhe program 
+        	syscall	
+
+       	incrementSum:
+       	       	addi $t2, $t2, 1  
+       		j incrementReturn
+       	
+       	       	       	
+       	       	
+	
+     	
+	
+	
+
+
+
+.data
+enterNumber: .asciiz "Please enter decimal number: "
+numberHex: .asciiz "This is the hexadecimal form of the number: "
+numReverse: .asciiz "This is the reversed version of your number in hexadecimal form: "
+input: .asciiz "Can you please give an integer in decimal form?\n"
+space: .asciiz "         "
+newLine: .asciiz "\n"
+numberArray: .word 0
+
+.text
+main:
+
+
+li $t0,1 
+loop2: beq $t0, 0, done2
+
+       	la $a0, enterNumber #"Please enter decimal number: "
+       	li $v0, 4 #print string
+       	syscall
+       	
+       	li $v0, 5 #read integer
+        syscall
+        move $t1, $v0
+        beq $t1,0,done2
+       	sw $v0, numberArray #memory write 
+       
+        
+       	la $a0, newLine 
+       	li $v0, 4  #print string
+       	syscall
+       	
+       	la $a0, numberHex	
+       	li $v0, 4	# syscall 4 prints the string
+       	syscall
+       	
+       	lw $a0, numberArray	
+       	li $v0, 34	# syscall 4 prints the string
+       	syscall
+       	
+       	la $a0, newLine     
+       	li $v0, 4 #print string
+       	syscall
+       	
+       	lw $a0, numberArray
+       	jal ReverseBits # calling sub program
+       	
+       	move $s5, $v0
+       	
+       	la $a0, numReverse	
+       	li $v0, 4	# syscall 4 prints the string
+       	syscall
+       	
+       	move $a0, $s5
+       	li $v0, 34	# syscall 4 prints the string
+       	syscall
+       	
+       	la $a0, newLine   
+       	li $v0, 4 #read string
+       	syscall
+       	
+       	j loop2
+       	
+       	
+
+done2:
+	li $v0, 10 #exit trhe program 
+	syscall	
+
+ReverseBits: 
+	  move $s0, $a0
+
+	  li $s1, 0 # setting reversed version 0
+	  li $s3, 32 # counter that set to max shift amount
+	  loop:
+	  	beq $s3, $zero, done # if counter 0 done
+	  	sll $s1, $s1, 1 # creating room for new bit and by shifting left, in the end $s1 have lsb of number as msb
+	  	andi $s2, $s0, 1 # and with 1 to obtain lsb
+	  	add $s1, $s1, $s2 # adding bit to the room I created for new bit
+	  	srl $s0, $s0, 1 # shifting right original number
+	  	subi $s3, $s3, 1 # decrement counter
+	  	j loop
+	  done:
+	  	move $v0, $s1 # storing $s1 to return 
+ 	  	jr $ra
+ 	  	

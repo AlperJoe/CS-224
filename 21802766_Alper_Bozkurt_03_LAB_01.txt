@@ -1,0 +1,307 @@
+##
+## Program1.asm - prints out "hello world"
+##
+##	a0 - points to the string
+##
+
+#################################
+#					 	#
+#		text segment		#
+#						#
+#################################
+
+	.text		
+
+# execution starts here
+	la $a0,str	# put string address into a0
+	li $v0,4	# system call to print
+	syscall		#   out a string
+
+	li $v0,10  # system call to exit
+	syscall	#    bye bye
+
+
+#################################
+#					 	#
+#     	 data segment		#
+#						#
+#################################
+
+	.data
+str:	.asciiz "hello alper\n"
+n:	.word	10
+
+##
+## end of file Program1.asm
+
+##
+## Program2.asm asks user for temperature in Celsius,
+##  converts to Fahrenheit, prints the result.
+##
+##	v0 - reads in Celsius
+##	t0 - holds Fahrenheit result
+##	a0 - points to output strings
+##
+
+#################################
+#					 	#
+#		text segment		#
+#						#
+#################################
+
+	.text			
+
+	la $a0,prompt	# output prompt message on terminal
+	li $v0,4	# syscall 4 prints the string
+	syscall
+
+	li $v0, 5	# syscall 5 reads an integer
+	syscall
+
+	mul $t0,$v0,9	# to convert,multiply by 9,
+	div $t0,$t0,5	# divide by 5, then
+	add $t0,$t0,32	# add 32
+
+	la $a0,ans1	# print string before result
+	li $v0,4
+	syscall
+
+	move $a0,$t0	# print integer result
+	li $v0,1		# using syscall 1
+	syscall
+
+	la $a0,endl	# system call to print
+	li $v0,4		# out a newline
+	syscall
+
+	li $v0,10		# system call to exit
+	syscall		#    bye bye
+
+
+#################################
+#					 	#
+#     	 data segment		#
+#						#
+#################################
+
+	.data
+prompt:	.asciiz "Enter temperature (Celsius): "
+ans1:	.asciiz "The temperature in Fahrenheit is "
+endl:	.asciiz "\n"
+
+##
+## end of file Program2.asm
+
+##
+##	Program3.asm is a loop implementation
+##	of the Fibonacci function
+##        
+
+#################################
+#					 	#
+#		text segment		#
+#						#
+#################################
+
+	.text	
+ 
+# execution starts here
+	li $a0,7	# to calculate fib(7)
+	jal fib		# call fib
+	move $a0,$v0	# print result
+	li $v0, 1
+	syscall
+
+	la $a0, endl	# print newline
+	li $v0,4
+	syscall
+
+	li $v0,10
+	syscall		# bye bye
+
+#------------------------------------------------
+
+
+fib:	move $v0,$a0	# initialise last element
+	blt $a0,2,done	# fib(0)=0, fib(1)=1
+
+	li $t0,0	# second last element
+	li $v0,1	# last element
+
+loop:	add $t1,$t0,$v0	# get next value
+	move $t0,$v0	# update second last
+	move $v0,$t1	# update last element
+	sub $a0,$a0,1	# decrement count
+	bgt $a0,1,loop	# exit loop when count=0
+done:	jr $ra
+
+#################################
+#					 	#
+#     	 data segment		#
+#						#
+#################################
+
+	.data
+endl:	.asciiz "\n"
+
+##
+## end of Program3.asm
+
+
+	.data
+	
+	problem: .asciiz 	"A = ((B * D)/2) + 5 - B)mod C)"
+	bValue: .asciiz "Enter B: "
+	cValue: .asciiz "Enter C: "
+	dValue: .asciiz "Enter D: "
+	result: .asciiz "Result: "
+	newLine: .asciiz "\n"
+
+	.text	
+	
+	la $a0, problem
+	li $v0, 4
+	syscall
+	
+	la $a0, newLine
+	li $v0, 4
+	syscall
+	
+	la $a0, bValue
+	li $v0, 4
+	syscall
+	
+	# $s0 = B
+	li $v0, 5
+	syscall
+	move $s0, $v0
+	
+	la $a0, cValue
+	li $v0, 4
+	syscall
+	
+	# $s1 = C
+	li $v0, 5
+	syscall
+	move $s1, $v0
+	
+	la $a0, dValue
+	li $v0, 4
+	syscall
+	
+	# $s2 = D
+	li $v0, 5
+	syscall
+	move $s2, $v0
+	
+	# A = ((B * D)/2) + 5 - B)mod C)
+	solve: 
+	mul $t0, $s0, $s2 #(B * D)
+	div $t1, $t0, 2 #((B * D)/2)
+	add $t2, $t1, 5 #(B * D)/2) + 5
+	sub $t3, $t2, $s0 #(B * D)/2) + 5 - B)
+	
+	div $t4, $t3, $s1   #((B * D)/2) + 5 - B)mod C)
+	mfhi $t5
+	
+	move $s3, $t5
+	
+	#print result word
+	la $a0, result
+	li $v0, 4
+	syscall
+	
+	#print result value
+	move $a0, $s3
+	li $v0, 1
+	syscall
+	
+
+.data
+
+array: .space 400 # max 100 elements array
+askArrSize: .asciiz "Enter array size: "
+askElement: .asciiz "Enter element: "
+menuDisplay: .asciiz "1-Find the maximum number stored in the array and display that number \n 2- Find the number of times the maximum number appears in the array.  \n 3-Find how many numbers we have (other than the maximum number) that we can divide the maximum number without a remainder.  \n Quit "
+	newLine: .asciiz "\n"
+
+
+.text
+
+menu:
+la $s0, array 
+
+
+#get and store array size
+la $a0, askArrSize
+li $v0, 4
+syscall
+li $v0, 5
+syscall
+move $s1, $v0
+
+#new line
+la $a0, newLine
+li $v0, 4
+syscall
+
+#initialize counters
+li $t0, 0
+li $t1, 0
+
+addElementLoop: 
+beq $s1, $t0 exitLoop
+
+la $a0, askElement
+li $v0, 4
+syscall
+
+li $v0,5
+syscall
+move $s2, $v0	
+
+sw $s2, ($s0)
+
+addi $t0, $t0,1
+addi $t0, $t0,4
+
+j addElementLoop
+
+exitLoop:
+
+li $t0, 0 
+li $t1, 0
+
+la $a0, newLine #"\n"
+li $v0, 4 #print string
+syscall
+
+la $a0, menuDisplay 
+li $v0, 4 
+syscall
+
+li $v0, 5 
+syscall 
+
+move $t0, $v0 #t0 = selection
+
+li $t1, 1
+li $t2, 2
+li $t3, 3
+li $t4, 4
+
+beq $t0, $t1, option1 #1-Max number.
+beq $t0, $t2, option2 #2-Number of times max no appears.
+beq $t0, $t3, option3 #3-how many no we have.
+beq $t0, $t4, quit    #5-Quit.
+
+option1:
+option2:
+option3:
+
+quit:
+li $v0, 10 #quit
+syscall
+
+	
+
